@@ -29,8 +29,8 @@ package(
 load(
     "//bazel:grpc_build_system.bzl",
     "grpc_cc_library",
-    "grpc_objc_library",
     "grpc_generate_one_off_targets",
+    "grpc_objc_library",
     "grpc_proto_plugin",
 )
 
@@ -1548,9 +1548,9 @@ grpc_cc_library(
     deps = [
         "alts_util",
         "grpc_base",
+        "grpc_shadow_boringssl",
         "grpc_transport_chttp2_alpn",
         "tsi",
-        "grpc_shadow_boringssl",
     ],
 )
 
@@ -1810,8 +1810,8 @@ grpc_cc_library(
     deps = [
         "gpr",
         "grpc_base",
-        "tsi_interface",
         "grpc_shadow_boringssl",
+        "tsi_interface",
     ],
 )
 
@@ -1906,9 +1906,9 @@ grpc_cc_library(
         "alts_util",
         "gpr",
         "grpc_base",
+        "grpc_shadow_boringssl",
         "grpc_transport_chttp2_client_insecure",
         "tsi_interface",
-        "grpc_shadow_boringssl",
     ],
 )
 
@@ -2131,10 +2131,10 @@ grpc_cc_library(
 grpc_cc_library(
     name = "grpc_opencensus_plugin",
     srcs = [
+        "src/core/ext/filters/census/grpc_context.cc",
         "src/cpp/ext/filters/census/channel_filter.cc",
         "src/cpp/ext/filters/census/client_filter.cc",
         "src/cpp/ext/filters/census/context.cc",
-        "src/core/ext/filters/census/grpc_context.cc",
         "src/cpp/ext/filters/census/grpc_plugin.cc",
         "src/cpp/ext/filters/census/measures.cc",
         "src/cpp/ext/filters/census/rpc_encoding.cc",
@@ -2176,65 +2176,71 @@ objc_path = "src/objective-c"
 rx_library_path = objc_path + "/RxLibrary"
 
 grpc_objc_library(
-  name = "rx_library",
-  hdrs = glob([
-    rx_library_path + "/*.h",
-    rx_library_path + "/transformations/*.h",
-  ]),
-  srcs = glob([
-    rx_library_path + "/*.m",
-    rx_library_path + "/transformations/*.m",
-  ]),
-  deps = [
-    ":rx_library_private",
-  ],
+    name = "rx_library",
+    srcs = glob([
+        rx_library_path + "/*.m",
+        rx_library_path + "/transformations/*.m",
+    ]),
+    hdrs = glob([
+        rx_library_path + "/*.h",
+        rx_library_path + "/transformations/*.h",
+    ]),
+    deps = [
+        ":rx_library_private",
+    ],
 )
 
 grpc_objc_library(
-  name = "rx_library_private",
-  hdrs = glob([rx_library_path + "/private/*.h"]),
-  srcs = glob([rx_library_path + "/private/*.m"]),
-  visibility = ["//visibility:private"],
+    name = "rx_library_private",
+    srcs = glob([rx_library_path + "/private/*.m"]),
+    hdrs = glob([rx_library_path + "/private/*.h"]),
+    visibility = ["//visibility:private"],
 )
 
 objc_client_path = objc_path + "/GRPCClient"
 
 grpc_objc_library(
-  name = "grpc_client",
-  hdrs = glob(include = [
-    objc_client_path + "/*.h",
-    objc_client_path + "/private/*.h",
-  ], exclude = [
-    objc_client_path + "/*+GID.h"
-  ]),
-  srcs = glob(include = [
-    objc_client_path + "/*.m",
-    objc_client_path + "/private/*.m",
-  ], exclude = [
-    objc_client_path + "/*+GID.m"  
-  ]),
-  deps = [
-    ":grpc++",
-    ":rx_library",
-  ],
+    name = "grpc_client",
+    srcs = glob(
+        include = [
+            objc_client_path + "/*.m",
+            objc_client_path + "/private/*.m",
+        ],
+        exclude = [
+            objc_client_path + "/*+GID.m",
+        ],
+    ),
+    hdrs = glob(
+        include = [
+            objc_client_path + "/*.h",
+            objc_client_path + "/private/*.h",
+        ],
+        exclude = [
+            objc_client_path + "/*+GID.h",
+        ],
+    ),
+    deps = [
+        ":grpc++",
+        ":rx_library",
+    ],
 )
 
 proto_objc_rpc_path = objc_path + "/ProtoRPC"
 
 grpc_objc_library(
-  name = "grpc_objc",
-  hdrs = glob([
-    proto_objc_rpc_path + "/*.h",
-  ]),
-  srcs = glob([
-    proto_objc_rpc_path + "/*.m",
-  ]),
-  deps = [
-    ":grpc_client",
-    # ":rx_library",
-    "@com_google_protobuf//:protobuf_objc",
-    # "@com_google_protobuf//:objectivec",
-  ],
+    name = "grpc_objc",
+    srcs = glob([
+        proto_objc_rpc_path + "/*.m",
+    ]),
+    hdrs = glob([
+        proto_objc_rpc_path + "/*.h",
+    ]),
+    deps = [
+        ":grpc_client",
+        # ":rx_library",
+        #"@com_google_protobuf//:protobuf_objc",
+        "@com_google_protobuf//:objectivec",
+    ],
 )
 
 # objc_path = "src/objective-c"
