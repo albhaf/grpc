@@ -29,6 +29,7 @@ package(
 load(
     "//bazel:grpc_build_system.bzl",
     "grpc_cc_library",
+    "grpc_objc_library",
     "grpc_generate_one_off_targets",
     "grpc_proto_plugin",
 )
@@ -2169,5 +2170,82 @@ grpc_cc_library(
         "src/core/tsi/grpc_shadow_boringssl.h",
     ],
 )
+
+objc_path = "src/objective-c"
+
+rx_library_path = objc_path + "/RxLibrary"
+
+grpc_objc_library(
+  name = "rx_library",
+  hdrs = glob([
+    rx_library_path + "/*.h",
+    rx_library_path + "/transformations/*.h",
+  ]),
+  srcs = glob([
+    rx_library_path + "/*.m",
+    rx_library_path + "/transformations/*.m",
+  ]),
+  deps = [
+    ":rx_library_private",
+  ],
+)
+
+grpc_objc_library(
+  name = "rx_library_private",
+  hdrs = glob([rx_library_path + "/private/*.h"]),
+  srcs = glob([rx_library_path + "/private/*.m"]),
+  visibility = ["//visibility:private"],
+)
+
+objc_client_path = objc_path + "/GRPCClient"
+
+grpc_objc_library(
+  name = "grpc_client",
+  hdrs = glob(include = [
+    objc_client_path + "/*.h",
+    objc_client_path + "/private/*.h",
+  ], exclude = [
+    objc_client_path + "/*+GID.h"
+  ]),
+  srcs = glob(include = [
+    objc_client_path + "/*.m",
+    objc_client_path + "/private/*.m",
+  ], exclude = [
+    objc_client_path + "/*+GID.m"  
+  ]),
+  deps = [
+    ":grpc++",
+    ":rx_library",
+  ],
+)
+
+proto_objc_rpc_path = objc_path + "/ProtoRPC"
+
+grpc_objc_library(
+  name = "grpc_objc",
+  hdrs = glob([
+    proto_objc_rpc_path + "/*.h",
+  ]),
+  srcs = glob([
+    proto_objc_rpc_path + "/*.m",
+  ]),
+  deps = [
+    ":grpc_client",
+    # ":rx_library",
+    "@com_google_protobuf//:protobuf_objc",
+    # "@com_google_protobuf//:objectivec",
+  ],
+)
+
+# objc_path = "src/objective-c"
+
+# grpc_objc_library(
+#     name = "grpc_objc",
+#     public_hdrs = glob([objc_path + "/ProtoRPC/*.h"]),
+#     deps = [
+#         "@com_google_protobuf//:objectivec",
+#         ":rxlibrary"
+#     ],
+# )
 
 grpc_generate_one_off_targets()

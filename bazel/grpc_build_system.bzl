@@ -199,3 +199,33 @@ def grpc_package(name, visibility = "private", features = []):
       default_visibility = visibility,
       features = features
     )
+
+def grpc_objc_library(name, srcs = [], public_hdrs = [], hdrs = [],
+                    external_deps = [], deps = [], standalone = False,
+                    language = "C++", testonly = False, visibility = None,
+                    alwayslink = 0, data = []):
+  copts = []
+  if language.upper() == "C":
+    copts = if_not_windows(["-std=c99"])
+  native.objc_library(
+    name = name,
+    srcs = srcs,
+    defines = select({"//:grpc_no_ares": ["GRPC_ARES=0"],
+                      "//conditions:default": [],}) +
+              select({"//:remote_execution":  ["GRPC_PORT_ISOLATED_RUNTIME=1"],
+                      "//conditions:default": [],}) +
+              select({"//:grpc_allow_exceptions":  ["GRPC_ALLOW_EXCEPTIONS=1"],
+                      "//:grpc_disallow_exceptions":
+                      ["GRPC_ALLOW_EXCEPTIONS=0"],
+                      "//conditions:default": [],}),
+    hdrs = _maybe_update_cc_library_hdrs(hdrs + public_hdrs),
+    deps = deps + _get_external_deps(external_deps),
+    copts = copts,
+    visibility = visibility,
+    testonly = testonly,
+    includes = [
+        "src/objective-c"
+    ],
+    alwayslink = alwayslink,
+    data = data,
+  )
