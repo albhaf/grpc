@@ -2219,6 +2219,9 @@ grpc_objc_library(
             objc_client_path + "/*+GID.h",
         ],
     ),
+    sdk_frameworks = [
+        "SystemConfiguration",
+    ],
     deps = [
         ":grpc++",
         ":rx_library",
